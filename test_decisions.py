@@ -1,53 +1,34 @@
+"""Automated tests for the deterministic FLOW STATE policy baseline."""
 
-from decisions import choose_policy
+import unittest
 
-test_cases = [
-    {
-        "name": "Normal network",
-        "inputs": {
-            "bandwidth_mbps": 10,
-            "latency_ms": 40,
-            "packet_loss_pct": 0.5,
-        },
-        "expected": "BALANCED",
-    },
-    {
-        "name": "Moderate congestion",
-        "inputs": {
-            "bandwidth_mbps": 2,
-            "latency_ms": 100,
-            "packet_loss_pct": 1,
-        },
-        "expected": "PROTECT_TELEMETRY",
-    },
-    {
-        "name": "Severe congestion",
-        "inputs": {
-            "bandwidth_mbps": 0.5,
-            "latency_ms": 350,
-            "packet_loss_pct": 12,
-        },
-        "expected": "DEFER_SENSORS",
-    },
-    {
-        "name": "Emergency",
-        "inputs": {
-            "bandwidth_mbps": 10,
-            "latency_ms": 40,
-            "packet_loss_pct": 0.5,
-            "emergency": True,
-        },
-        "expected": "REDUCE_VIDEO",
-    },
-]
+from decisions import POLICIES, choose_policy
+from simulator import run_simulation
 
-for case in test_cases:
-    result = choose_policy(**case["inputs"])
-    passed = result["policy"] == case["expected"]
 
-    print(
-        f"{'PASS' if passed else 'FAIL'} | "
-        f"{case['name']} | "
-        f"Expected: {case['expected']} | "
-        f"Got: {result['policy']}"
+class BaselineDecisionTests(unittest.TestCase):
+    CASES = (
+        ("Normal", 5.0, 70, 1, False, "BALANCED"),
+        ("Moderate", 2.0, 180, 5, False, "PROTECT_TELEMETRY"),
+        ("Severe", 0.5, 350, 15, False, "DEFER_SENSORS"),
+        ("Emergency", 1.5, 220, 6, True, "REDUCE_VIDEO"),
     )
+
+    def test_evaluation_scenario_baseline_outputs(self):
+        for name, bandwidth, latency, loss, emergency, expected in self.CASES:
+            with self.subTest(scenario=name):
+                result = choose_policy(bandwidth, latency, loss, emergency)
+                self.assertEqual(result["policy"], expected)
+                self.assertEqual(result["actions"], POLICIES[expected])
+
+    def test_emergency_policy_preserves_telemetry(self):
+        result = choose_policy(0, 0, 100, True)
+        self.assertEqual(result["policy"], "REDUCE_VIDEO")
+        self.assertEqual(result["actions"]["telemetry"], "high_priority")
+
+    def test_seeded_simulation_is_repeatable(self):
+        self.assertEqual(run_simulation(steps=12, seed=42), run_simulation(steps=12, seed=42))
+
+
+if __name__ == "__main__":
+    unittest.main()

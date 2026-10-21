@@ -3,3 +3,8 @@ __pycache__/
 *.py[cod]
 .env
 .aws/
+models/
+checkpoints/
+.cache/huggingface/
+*.safetensors
+reports/
