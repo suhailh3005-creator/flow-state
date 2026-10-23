@@ -19,7 +19,7 @@ if [[ $# -ne 0 ]]; then usage >&2; exit 2; fi
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 ROOT="$(cd -- "$SCRIPT_DIR/.." && pwd -P)"
-EXPECTED_ROOT="$HOME/Desktop/flow-state"
+EXPECTED_ROOT="${FLOW_STATE_EXPECTED_ROOT:-$ROOT}"
 PYTHON="$ROOT/.venv/bin/python"
 STREAMLIT="$ROOT/.venv/bin/streamlit"
 PORT="${FLOW_STATE_VERIFY_PORT:-8765}"

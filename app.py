@@ -23,7 +23,65 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
+SUPPORTED_THEMES = ("Dark", "Light")
+DEFAULT_THEME = "Dark"
+
+if "flow_state_theme" not in st.session_state:
+    st.session_state["flow_state_theme"] = DEFAULT_THEME
+if "_prev_flow_state_theme" not in st.session_state:
+    st.session_state["_prev_flow_state_theme"] = DEFAULT_THEME
+
+
+def on_theme_change() -> None:
+    chosen = st.session_state.get("flow_state_theme")
+    if chosen not in SUPPORTED_THEMES:
+        st.session_state["flow_state_theme"] = st.session_state.get(
+            "_prev_flow_state_theme", DEFAULT_THEME
+        )
+    else:
+        st.session_state["_prev_flow_state_theme"] = chosen
+
+
+active_theme = st.session_state.get("flow_state_theme") or st.session_state.get(
+    "_prev_flow_state_theme", DEFAULT_THEME
+)
+
 CSS = Path(__file__).with_name("styles.css").read_text(encoding="utf-8")
+theme_override_css = ""
+if active_theme == "Light":
+    theme_override_css = """
+/* Active theme override: Light */
+:root, [data-testid="stAppViewContainer"], [data-testid="stApp"], .stApp {
+  --color-background: #F8F9FA;
+  --color-surface: #FFFFFF;
+  --color-surface-secondary: #EDF2F7;
+  --color-surface-elevated: #E2E8F0;
+  --color-text: #1A202C;
+  --color-text-secondary: #4A5568;
+  --color-text-secondary-readable: #2D3748;
+  --color-text-muted: #718096;
+  --color-accent: #0F766E;
+  --color-accent-hover: #115E59;
+  --color-accent-subtle: rgba(15, 118, 110, 0.12);
+  --color-accent-blue: #1D4ED8;
+  --color-success: #15803D;
+  --color-warning: #B45309;
+  --color-error: #C53030;
+  --color-sage: #15803D;
+  --color-border: #CBD5E0;
+  --color-card-shadow: rgba(0, 0, 0, 0.06);
+  --color-overview-shadow: rgba(0, 0, 0, 0.08);
+  --color-primary-button-text: #FFFFFF;
+  --color-secondary-button-bg: rgba(15, 118, 110, 0.08);
+  --color-secondary-button-border: rgba(15, 118, 110, 0.42);
+  --color-secondary-button-hover-bg: rgba(15, 118, 110, 0.15);
+  --color-overview-orbit: rgba(15, 118, 110, 0.2);
+  --color-overview-orbit-subtle: rgba(15, 118, 110, 0.15);
+  --color-overview-orbit-faint: rgba(15, 118, 110, 0.12);
+  --color-explanation-bg: rgba(15, 118, 110, 0.06);
+  --color-explanation-border: rgba(15, 118, 110, 0.35);
+}
+"""
 st.markdown(
     """
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -32,7 +90,7 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-st.html(f"<style>\n{CSS}\n</style>")
+st.html(f"<style>\n{CSS}\n{theme_override_css}\n</style>")
 
 DEFAULT_INPUTS = {
     "flow_state_bandwidth": 5.0,
@@ -212,25 +270,35 @@ def render_comparison_table(rows: list[dict]) -> None:
     )
 
 
-st.markdown(
-    """
-    <nav class="quiet-nav" aria-label="FLOW STATE product navigation">
-      <div class="brand-lockup">
-        <svg class="brand-mark" viewBox="0 0 40 40" role="img" aria-label="FLOW STATE flight path mark">
-          <rect x="1" y="1" width="38" height="38" rx="13" fill="#1C2835"/>
-          <path d="M8 25.5c5.3 0 5.2-11 10.8-11 5.2 0 4.8 11 10.4 11 1.2 0 2.1-.4 3-.9" fill="none" stroke="#55D6BE" stroke-width="2.1" stroke-linecap="round"/>
-          <circle cx="8" cy="25.5" r="2" fill="#70A7FF"/><circle cx="32" cy="24.6" r="2" fill="#52D49A"/>
-        </svg>
-        <div class="brand-name"><strong>FLOW STATE</strong><span>UAV network simulator</span></div>
-      </div>
-      <div class="nav-statuses">
-        <span class="nav-pill sage">Simulation environment</span>
-        <span class="nav-pill">Strands · local request on evaluate</span>
-      </div>
-    </nav>
-    """,
-    unsafe_allow_html=True,
-)
+nav_cols = st.columns([3.1, 0.9], vertical_alignment="center")
+with nav_cols[0]:
+    st.markdown(
+        """
+        <nav class="quiet-nav" aria-label="FLOW STATE product navigation">
+          <div class="brand-lockup">
+            <svg class="brand-mark" viewBox="0 0 40 40" role="img" aria-label="FLOW STATE flight path mark">
+              <rect x="1" y="1" width="38" height="38" rx="13" class="brand-mark-bg"/>
+              <path d="M8 25.5c5.3 0 5.2-11 10.8-11 5.2 0 4.8 11 10.4 11 1.2 0 2.1-.4 3-.9" fill="none" stroke="var(--color-accent)" stroke-width="2.1" stroke-linecap="round"/>
+              <circle cx="8" cy="25.5" r="2" fill="var(--color-accent-blue)"/><circle cx="32" cy="24.6" r="2" fill="var(--color-sage)"/>
+            </svg>
+            <div class="brand-name"><strong>FLOW STATE</strong><span>UAV network simulator</span></div>
+          </div>
+          <div class="nav-statuses">
+            <span class="nav-pill sage">Simulation environment</span>
+            <span class="nav-pill">Strands · local request on evaluate</span>
+          </div>
+        </nav>
+        """,
+        unsafe_allow_html=True,
+    )
+with nav_cols[1]:
+    st.segmented_control(
+        "Theme",
+        options=["Dark", "Light"],
+        key="flow_state_theme",
+        on_change=on_theme_change,
+        label_visibility="collapsed",
+    )
 
 bandwidth_value = st.session_state.get("flow_state_bandwidth", DEFAULT_INPUTS["flow_state_bandwidth"])
 latency_value = st.session_state.get("flow_state_latency", DEFAULT_INPUTS["flow_state_latency"])
@@ -429,7 +497,7 @@ with outlook_cols[1]:
 # Bedrock is optional and explains the already selected policy only.
 st.markdown('<div style="height:22px"></div><div class="section-kicker">Optional explanation</div><h2 class="section-heading">Nova Lite explanation</h2>', unsafe_allow_html=True)
 with st.container(border=True):
-    st.markdown('<div class="explanation-panel"><strong>Amazon Bedrock explains this policy; it does not choose or change it.</strong><br><span style="color:#A8B5C4">Generate an explanation only when you choose the button. Model access is required.</span></div>', unsafe_allow_html=True)
+    st.markdown('<div class="explanation-panel"><strong>Amazon Bedrock explains this policy; it does not choose or change it.</strong><br><span class="explanation-note">Generate an explanation only when you choose the button. Model access is required.</span></div>', unsafe_allow_html=True)
     explanation_key = (
         bandwidth, latency, packet_loss, emergency, decision["policy"], decision["reason"],
     )
