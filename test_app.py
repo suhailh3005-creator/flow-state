@@ -198,6 +198,22 @@ class DashboardTests(unittest.TestCase):
             with self.subTest(token=token):
                 self.assertIn(token, CSS_SOURCE)
 
+    def test_overview_card_decoration_stacking_and_clipping(self):
+        self.assertIn(".overview-card {", CSS_SOURCE)
+        self.assertIn("isolation: isolate;", CSS_SOURCE)
+        self.assertIn("overflow: hidden;", CSS_SOURCE)
+        self.assertIn("z-index: 0;", CSS_SOURCE)
+        self.assertIn(".overview-grid,", CSS_SOURCE)
+        self.assertIn("z-index: 1;", CSS_SOURCE)
+
+    def test_segmented_control_button_group_styling(self):
+        self.assertIn('[data-testid="stButtonGroup"] button', CSS_SOURCE)
+        self.assertIn("var(--color-surface-secondary)", CSS_SOURCE)
+        self.assertIn("var(--color-accent)", CSS_SOURCE)
+        self.assertIn('[data-testid="stButtonGroup"] button:focus-visible', CSS_SOURCE)
+        self.assertIn("outline: 2px solid var(--color-accent);", CSS_SOURCE)
+        self.assertIn("outline-offset: -1px;", CSS_SOURCE)
+
 
 if __name__ == "__main__":
     unittest.main()

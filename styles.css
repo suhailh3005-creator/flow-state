@@ -150,9 +150,54 @@ html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"], [data-tes
   color: var(--color-text);
 }
 
-[data-testid="stSegmentedControl"] [aria-checked="true"] {
-  background: var(--color-accent-subtle);
+/* Segmented controls / Button groups */
+.stApp [data-testid="stButtonGroup"] {
+  background: transparent;
+}
+
+.stApp [data-testid="stButtonGroup"] button {
+  background: var(--color-surface-secondary);
+  color: var(--color-text-secondary-readable);
+  border: 1px solid var(--color-border);
+  font-family: var(--font-body);
+  font-weight: 500;
+  transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+
+.stApp [data-testid="stButtonGroup"] button:hover:not([data-disabled]) {
+  background: var(--color-surface-elevated);
   color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+.stApp [data-testid="stButtonGroup"] button[data-selected="true"],
+.stApp [data-testid="stButtonGroup"] button[data-selected],
+.stApp [data-testid="stButtonGroup"] button[aria-pressed="true"],
+.stApp [data-testid="stButtonGroup"] button[aria-checked="true"] {
+  background: var(--color-surface);
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+  font-weight: 600;
+  z-index: 2;
+  box-shadow: 0 1px 4px var(--color-card-shadow);
+}
+
+.stApp [data-testid="stButtonGroup"] button[data-selected="true"]:hover,
+.stApp [data-testid="stButtonGroup"] button[data-selected]:hover {
+  background: var(--color-surface);
+  color: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+}
+
+.stApp [data-testid="stButtonGroup"] button:focus {
+  outline: none;
+}
+
+.stApp [data-testid="stButtonGroup"] button:focus-visible,
+.stApp [data-testid="stButtonGroup"] button[data-focus-visible] {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -1px;
+  z-index: 3;
 }
 
 button[kind="primary"], [data-testid="stFormSubmitButton"] button {
@@ -372,6 +417,7 @@ hr {
 .overview-card {
   position: relative;
   overflow: hidden;
+  isolation: isolate;
   padding: 1.45rem 1.5rem 1.2rem;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
@@ -380,16 +426,24 @@ hr {
 }
 .overview-card::after {
   position: absolute;
-  right: -34px;
-  bottom: -61px;
-  width: 205px;
-  height: 135px;
+  right: -24px;
+  bottom: -46px;
+  width: 170px;
+  height: 110px;
   border: 1px solid var(--color-overview-orbit);
   border-radius: 50%;
   content: "";
-  transform: rotate(-17deg);
-  box-shadow: 0 -13px 0 -1px var(--color-surface), 0 -14px 0 0 var(--color-overview-orbit-subtle), 0 -28px 0 -1px var(--color-surface), 0 -29px 0 0 var(--color-overview-orbit-faint);
+  transform: rotate(-15deg);
+  box-shadow: 0 -10px 0 -1px var(--color-surface), 0 -11px 0 0 var(--color-overview-orbit-subtle), 0 -20px 0 -1px var(--color-surface), 0 -21px 0 0 var(--color-overview-orbit-faint);
   pointer-events: none;
+  z-index: 0;
+}
+.overview-top,
+.overview-grid,
+.overview-rule,
+.overview-foot {
+  position: relative;
+  z-index: 1;
 }
 .overview-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
 .overview-label, .metric-label { color: var(--color-text-secondary-readable); font-size: 0.83rem; }
