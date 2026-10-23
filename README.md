@@ -127,9 +127,24 @@ deployment according to the upstream security guidance.
 
 ## Run FLOW STATE
 
-The direct app dependencies are Streamlit and Requests; the ML inference stack
-stays in the separate environment. From the FLOW STATE repository, activate its
-existing environment and start the dashboard:
+The dashboard uses the **Quiet Flight** interface: warm cream surfaces, sage and
+coral accents, Fraunces and Source Sans 3 typography, responsive simulator
+controls, and an editorial layout. Google Fonts are requested by the browser;
+the page includes local serif and sans-serif fallbacks. Decision logic,
+traffic allocation, metrics, and comparison values continue to come from the
+Python modules documented above.
+
+The app uses Streamlit and Requests for the dashboard and Strands adapter, and
+Boto3 for the optional, user-triggered Bedrock explanation. The Strands model
+runtime stays in its separate environment. To install dependencies in a fresh
+checkout, run:
+
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+```
+
+To start the dashboard from the FLOW STATE repository:
 
 In Terminal 2, start the dashboard with the existing FLOW STATE environment:
 
@@ -140,6 +155,9 @@ export FLOW_STATE_AI_URL=http://127.0.0.1:8000
 export FLOW_STATE_AI_TIMEOUT_SECONDS=30
 python -m streamlit run app.py
 ```
+
+`app.py` is the Streamlit entry point; `styles.css` is loaded and injected by
+the app and is not a page to run directly.
 
 Select **Deterministic baseline** to work without a model service. Select
 **Strands Decider AI** to call the configured service. The UI reports whether a
@@ -155,6 +173,12 @@ unprompted model call.
 Mock responses identify themselves with model name `mock`,
 `mock-strands-decider`, or `test-mock` and are labeled as mock. Unit tests use
 mocked HTTP responses and never contact a service.
+
+The separate **Generate Nova Lite explanation** button makes one optional
+Bedrock request for the currently selected policy. Its SDK client uses a
+3-second connection timeout, a 20-second read timeout, and one total attempt.
+If Bedrock is unavailable or returns invalid content, the UI labels its local
+fallback as local text; it never presents that text as Bedrock output.
 
 ### Adapter configuration
 
@@ -181,9 +205,21 @@ credentials, or checkpoint download needed):
 
 ```bash
 .venv/bin/python -m unittest discover -v
-.venv/bin/python -m compileall -q .
-git diff --check
 ```
+
+This command uses only offline tests and mocked model/service responses. The
+real Strands integration test is skipped unless explicitly enabled. No AWS
+credentials or Bedrock calls are needed for the test suite. For a reproducible
+report of all four deterministic baseline scenarios and their **simulated**
+metrics, run:
+
+```bash
+.venv/bin/python scripts/evaluate_offline.py
+```
+
+The report is written to `reports/offline-evaluation.json` (ignored by Git),
+contains no timestamp, and records zero model calls. Choose a different path
+with `--output PATH.json`.
 
 The real-service check is separate and skipped by default. Start the service as
 above, then run:
@@ -226,18 +262,14 @@ simulated. Results vary with the model and runtime environment. Service errors
 or fallback make the report incomplete and the command exits nonzero; remaining
 scenarios are recorded without making extra requests.
 
-Verification on 2026-10-21: `unittest discover` completed with 26 passed and
-one opt-in real-service test skipped; `compileall` and `git diff --check` passed.
-The Streamlit process returned HTTP 200 on localhost. The UI was tested with
-headless `AppTest`, not a visual browser.
+Most recently verified offline test results should be taken from the test run
+for the current checkout; historical results are not a substitute for that
+run. Streamlit UI coverage uses headless `AppTest`, not a visual browser.
 
-The app was headlessly smoke-tested with Streamlit `AppTest`, including one
-mocked AI request and an unrelated rerun. The installed Strands route handlers
-and Pydantic contract were exercised with a weightless fake engine. The user
-reports that the exact checkpoint is now running on the separate local CPU
-service and completed a real request in about 2.9 seconds. During the current
-integration work, the opt-in real-service test also passed against that running
-service. The code does not restart the service or reload checkpoint weights.
+The offline UI smoke test renders the baseline dashboard and checks the visible
+source labels. Adapter behavior is covered by mocked tests. The opt-in test
+against a live Strands service is not part of the offline verification, and no
+current service or checkpoint status is implied here.
 
 ### Safe local verification harness
 
