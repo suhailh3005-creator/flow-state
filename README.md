@@ -4,10 +4,7 @@
 
 FLOW STATE is a Streamlit simulator for testing how a UAV network can allocate limited bandwidth across telemetry, video, and sensor traffic. Configure bandwidth, latency, packet loss, and emergency mode, then compare a deterministic baseline with a Strands Decider recommendation.
 
-![FLOW STATE dashboard]
-
-
-![Uploading image.png…]()
+![FLOW STATE dashboard](tests/dashboard.png)
 
 > **Scope:** Network conditions, traffic allocations, and performance metrics are simulated. FLOW STATE does not control real UAVs, and its dashboard metrics are not field measurements.
 
